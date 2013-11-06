@@ -4,11 +4,17 @@ block content
   p#w= word
 
   .panel
+    .pure-menu.pure-menu-open.pure-menu-horizontal
+      ul
+        li
+          a(href='#', id='tw')
+            i(class='fa fa-twitter') &nbsp;Tweet
+        li
+          a(href='#', id='fb')
+            i(class='fa fa-facebook') &nbsp;Share
     p#counter 0 times
     p.score
       span#hit 0 hits
-      a(href='#', id='tw')
-        i(class='fa fa-twitter')
       / HighScore: 
       span#highscore 0 hits
 
@@ -17,8 +23,9 @@ block content
 
   .panel
     form#create.pure-form
-      input(type='text', name='word', size='30', placeholder='New words') 
-      button(type='submit', class='pure-button pure-button-primary') Create
+      fieldset.pure-group
+        input(type='text', name='word', class='pure-input-1', placeholder='New word') 
+        button(type='submit', class='pure-button pure-button-primary pure-input-1') Create
 
 
 block javascripts
@@ -29,6 +36,7 @@ block javascripts
         , $hit = $('#hit')
         , $highscore = $('#highscore')
         , $tw = $('#tw')
+        , $fb = $('#fb')
         , $form = $('#create')
         , originalText = $w.text()
         , originalChars = originalText.split('')
@@ -91,6 +99,21 @@ block javascripts
         window.open(url, 'tweet');
 
         ga('send', 'social', 'twitter', 'tweet', 'http://takmsapp.katteba.com/' + originalText);
+      });
+
+      $fb.on('click', function(e) {
+        e.preventDefault();
+
+        FB.ui({
+          method: 'feed',
+          name: $.text(),
+          link: 'http://takmsapp.katteba.com/' + originalText,
+          caption: '(' + $hit.text() + ', ' + $counter.text() + ') / ' + originalText
+        }, function(response) {
+          if (response && response.post_id) {
+            ga('send', 'social', 'facebook', 'share', 'http://takmsapp.katteba.com/' + originalText);
+          }
+        });
       });
 
       $form.on('submit', function(e) {
