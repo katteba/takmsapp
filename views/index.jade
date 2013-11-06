@@ -1,0 +1,107 @@
+extends layout
+
+block content
+  p#w= word
+
+  .panel
+    p#counter 0 times
+    p.score
+      span#hit 0 hits
+      a(href='#', id='tw')
+        i(class='fa fa-twitter')
+      / HighScore: 
+      span#highscore 0 hits
+
+  .panel.social-plugins
+    div(class='fb-like', data-href='http://takmsapp.katteba.com/#{ word }', data-colorscheme='light', data-layout='box_count', data-action='like', data-show-faces='true')
+
+  .panel
+    form#create.pure-form
+      input(type='text', name='word', size='30', placeholder='New words') 
+      button(type='submit', class='pure-button pure-button-primary') Create
+
+
+block javascripts
+  script.
+    $(function() {
+      var $w = $('#w')
+        , $counter = $('#counter')
+        , $hit = $('#hit')
+        , $highscore = $('#highscore')
+        , $tw = $('#tw')
+        , $form = $('#create')
+        , originalText = $w.text()
+        , originalChars = originalText.split('')
+        , highscore = 0
+        , counter = 0
+        , timer
+        , auto = function() {
+            timer = setInterval(function() {
+              $w.click();
+              if ($w.text() == originalText) {
+                clearInterval(timer);
+              }
+            }, 50);
+          };
+
+      $w.on('click', function() {
+        var $w = $(this)
+          , hit = 0
+          , shuffledChars = _.shuffle($w.text().split(''));
+
+        $hit.removeClass('high');
+        $w.empty();
+
+        _(originalChars).each(function(val, i) {
+          var $c = $('<span />').text(shuffledChars[i]);
+
+          if (val == shuffledChars[i]) {
+            $c.addClass('match');
+            hit++;
+          }
+
+          $w.append($c);
+        });
+
+        highscore = _.max([highscore, hit]);
+
+        $counter.text(++counter + ' times');
+        $hit.text(hit + ' hits');
+        $highscore.text(highscore + ' hits');
+
+        if (highscore == hit) {
+          $hit.addClass('high');
+        }
+
+        ga('send', 'event', 'click', 'shuffle', originalText);
+      });
+
+      $tw.on('click', function(e) {
+        e.preventDefault();
+
+        var text = $w.text() + ' (' + $hit.text() + ', ' + $counter.text() + ') / ' + originalText
+          , url = 'https://twitter.com/share?';
+
+        url += 'url=' + encodeURIComponent('http://takmsapp.katteba.com/' + encodeURIComponent(originalText));
+        url += '&text=' + encodeURIComponent(text);
+        url += '&via=takmsapp';
+        url += '&related=takmsapp';
+        url += '&hashtags=takmsapp';
+
+        window.open(url, 'tweet');
+
+        ga('send', 'social', 'twitter', 'tweet', 'http://takmsapp.katteba.com/' + originalText);
+      });
+
+      $form.on('submit', function(e) {
+        e.preventDefault();
+
+        var word = $('input[name=word]', $form).val();
+
+        window.location = '/' + word;
+      });
+
+      $(document).cheatCode({
+        activated: auto
+      }).gShake(auto);
+    });
