@@ -38,6 +38,7 @@ block javascripts
         , $tw = $('#tw')
         , $fb = $('#fb')
         , $form = $('#create')
+        , $window = $(window)
         , originalText = $w.text()
         , originalChars = originalText.split('')
         , highscore = 0
@@ -47,9 +48,12 @@ block javascripts
             timer = setInterval(function() {
               $w.click();
               if ($w.text() == originalText) {
-                clearInterval(timer);
+                stop();
               }
             }, 50);
+          }
+        , stop = function() {
+            clearInterval(timer);
           };
 
       $w.on('click', function() {
@@ -128,4 +132,10 @@ block javascripts
         activated: auto,
         unbind: false
       }).gShake(auto);
+
+      $window.on('scroll', function() {
+        if ($window.scrollTop() < 0) {
+          stop();
+        }
+      });
     });
